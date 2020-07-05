@@ -1,14 +1,16 @@
+from flask import Flask, render_template, request, redirect
+
 import json
 import csv
 import requests
 
-from flask import Flask, render_template, request, redirect
+
+app = Flask(__name__)
 
 response = requests.get("http://api.nbp.pl/api/exchangerates/tables/C?format=json")
 data = response.json()[0]['rates']
 
-print(data)
-
+#print(data)
 
 with open("currencies.csv", "w") as csv_file:
     writer = csv.writer(csv_file, delimiter=';')
@@ -18,14 +20,30 @@ with open("currencies.csv", "w") as csv_file:
         row = currency.values()
         writer.writerow(row)
 
+codes = []
+
+for row in data:
+    codes.append(row["code"])
+
+#print(codes)
+
+codes_currencies = {k: v for (k, v) in zip(codes, data)}
+
+#print(codes_currencies)
+
+
 @app.route('/index', methods=['GET', 'POST'])
 def message():
-   if request.method == 'GET':
+    if request.method == 'GET':
         print("We received GET")
         return render_template("index.html")
     elif request.method == 'POST':
+        ask = codes_currencies[request.form["currency"]]["ask"]
+        value = str(float(ask) * int(request.form["quantity"])) + "PLN"
         print("We received POST")
-        print(request.form)
-        return render_template("result.html")
+        return render_template("result.html", result=value)
+        
 
 
+if __name__ == '__main__':
+    app.run(debug=True)
