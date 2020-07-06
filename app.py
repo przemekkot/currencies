@@ -32,14 +32,14 @@ codes_currencies = {k: v for (k, v) in zip(codes, data)}
 #print(codes_currencies)
 
 
-@app.route('/index', methods=['GET', 'POST'])
-def message():
+@app.route('/', methods=['GET', 'POST'])
+def calculate():
     if request.method == 'GET':
         print("We received GET")
         return render_template("index.html")
     elif request.method == 'POST':
         ask = codes_currencies[request.form["currency"]]["ask"]
-        value = str(float(ask) * int(request.form["quantity"])) + "PLN"
+        value = float(ask) * int(request.form["quantity"])
         print("We received POST")
         return render_template("result.html", result=value)
         
